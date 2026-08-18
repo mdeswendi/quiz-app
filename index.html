@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Web Dasar WPU - FIK Unsub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        unsub: {
+                            blue: '#1e3a8a',
+                            yellow: '#eab308',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+        }
+        .option-card {
+            transition: all 0.2s ease;
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col justify-between p-4 sm:p-6 md:p-8">
+
+    <!-- Header / Navbar Kampus -->
+    <header class="max-w-4xl w-full mx-auto flex items-center justify-between border-b border-blue-900 pb-4 mb-6">
+        <div class="flex items-center space-x-3">
+            <div class="bg-yellow-500 text-blue-900 font-bold p-2.5 rounded-lg shadow-md flex items-center justify-center">
+                <span class="text-xl">FIK</span>
+            </div>
+            <div>
+                <h1 class="text-base sm:text-lg font-bold tracking-wide">SISTEM INFORMASI</h1>
+                <p class="text-xs text-slate-400">Fakultas Ilmu Komputer - Universitas Subang</p>
+            </div>
+        </div>
+        <div class="text-right hidden sm:block">
+            <p class="text-xs text-slate-400">Kelas RPL (Rekayasa Perangkat Lunak)</p>
+            <p class="text-xs text-yellow-400 font-semibold">Web Dasar WPU Quiz</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl w-full mx-auto flex-grow flex items-center justify-center my-4">
+        
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="bg-slate-900/80 backdrop-blur-md border border-slate-800 p-6 sm:p-10 rounded-2xl shadow-2xl w-full text-center">
+            <div class="inline-block p-4 bg-yellow-500/10 text-yellow-500 rounded-full mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold mb-4">Kuis Interaktif Web Dasar</h2>
+            <p class="text-slate-400 mb-8 max-w-lg mx-auto text-sm sm:text-base">
+                Selamat datang Pak Des! Kuis ini berisi 10 soal acak pilihan ganda seputar HTML, CSS, dan JavaScript dasar yang terinspirasi dari materi <span class="text-yellow-400 font-semibold">Web Programming Unpas (WPU)</span>.
+            </p>
+            <button id="start-btn" class="bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-yellow-500/20 hover:scale-105 active:scale-95 transition-all text-base">
+                Mulai Kuis Sekarang
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden bg-slate-900/80 backdrop-blur-md border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full">
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-slate-400 font-medium">Progress Soal</span>
+                    <span id="question-counter" class="text-xs text-yellow-400 font-bold">Soal 1 dari 10</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div id="progress-bar-fill" class="bg-yellow-500 h-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="mb-6">
+                <h3 id="question-text" class="text-base sm:text-lg md:text-xl font-semibold leading-relaxed mb-6 text-slate-100">
+                    Memuat pertanyaan...
+                </h3>
+                
+                <!-- Options Container -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Options will be generated dynamically -->
+                </div>
+            </div>
+
+            <!-- Action Area -->
+            <div class="flex justify-between items-center pt-4 border-t border-slate-800 mt-6">
+                <div class="text-xs text-slate-500 italic">
+                    *Pilih salah satu jawaban untuk melanjutkan
+                </div>
+                <button id="next-btn" disabled class="bg-yellow-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-yellow-400 text-blue-950 font-bold px-6 py-2.5 rounded-xl shadow-md transition-all">
+                    Lanjut
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden bg-slate-900/80 backdrop-blur-md border border-slate-800 p-6 sm:p-10 rounded-2xl shadow-2xl w-full">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">Hasil Kuis Anda</h2>
+                <p class="text-slate-400 text-sm">Berikut adalah pencapaian kuis Web Dasar WPU Anda</p>
+            </div>
+
+            <!-- Score Visualizer -->
+            <div class="flex flex-col sm:flex-row items-center justify-around bg-slate-950/50 rounded-2xl p-6 mb-8 border border-slate-800/80 gap-6">
+                <div class="relative flex items-center justify-center">
+                    <!-- Circular Score -->
+                    <svg class="w-32 h-32 transform -rotate-90">
+                        <circle cx="64" cy="64" r="54" stroke="currentColor" class="text-slate-800" stroke-width="8" fill="transparent" />
+                        <circle id="score-circle" cx="64" cy="64" r="54" stroke="currentColor" class="text-yellow-500 transition-all duration-1000" stroke-width="8" fill="transparent" stroke-dasharray="339.29" stroke-dashoffset="339.29" />
+                    </svg>
+                    <div class="absolute flex flex-col items-center">
+                        <span id="final-score" class="text-3xl font-extrabold text-white">0</span>
+                        <span class="text-xs text-slate-400">Skor Akhir</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2 text-center sm:text-left">
+                    <h3 id="result-greeting" class="text-xl font-bold text-yellow-400">Luar biasa, Pak Des!</h3>
+                    <p id="result-summary" class="text-slate-300 text-sm max-w-xs">
+                        Anda berhasil menjawab <span id="correct-count" class="font-bold text-emerald-400">0</span> dari <span class="font-bold">10</span> soal dengan benar.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
+                        <div class="bg-emerald-500/10 text-emerald-400 text-xs px-3 py-1 rounded-full border border-emerald-500/20">
+                            Benar: <span id="badge-correct" class="font-bold">0</span>
+                        </div>
+                        <div class="bg-rose-500/10 text-rose-400 text-xs px-3 py-1 rounded-full border border-rose-500/20">
+                            Salah: <span id="badge-wrong" class="font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4 flex items-center space-x-2 text-slate-200">
+                    <span>Evaluasi Jawaban</span>
+                    <span class="text-xs font-normal text-slate-500">(Klik soal untuk melihat detail)</span>
+                </h3>
+                <div id="review-container" class="space-y-3 max-h-80 overflow-y-auto pr-2 border-r border-slate-800">
+                    <!-- Review cards dynamically generated -->
+                </div>
+            </div>
+
+            <!-- Restart Button -->
+            <div class="text-center border-t border-slate-800 pt-6">
+                <button id="restart-btn" class="bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-yellow-500/10 transition-all">
+                    Coba Lagi
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Kampus -->
+    <footer class="text-center text-xs text-slate-500 mt-6 border-t border-slate-800/50 pt-4">
+        &copy; 2026 Universitas Subang. Dibuat khusus untuk Pak Des - Prodi Sistem Informasi FIK.
+    </footer>
+
+    <!-- JavaScript Quiz Logic -->
+    <script>
+        // Kumpulan 10 Soal Web Dasar (HTML, CSS, JS Dasar - Terinspirasi WPU)
+        const questionsDatabase = [
+            {
+                id: 1,
+                question: "Apa perbedaan utama antara elemen &lt;div&gt; dan &lt;span&gt; dalam dokumen HTML?",
+                options: [
+                    "&lt;div&gt; adalah block-level element (memulai baris baru), sedangkan &lt;span&gt; adalah inline element (tetap di baris yang sama).",
+                    "&lt;div&gt; hanya bisa diisi teks, sedangkan &lt;span&gt; khusus untuk gambar.",
+                    "&lt;div&gt; adalah inline element, sedangkan &lt;span&gt; adalah block-level element.",
+                    "&lt;div&gt; secara otomatis menebalkan huruf, sedangkan &lt;span&gt; memiringkan huruf."
+                ],
+                correctIndex: 0,
+                explanation: "Tag &lt;div&gt; bersifat block-level yang akan mengambil lebar penuh kontainer dan memulai baris baru. Sedangkan &lt;span&gt; bersifat inline yang membungkus konten teks tanpa merusak alur baris yang ada."
+            },
+            {
+                id: 2,
+                question: "Manakah di bawah ini yang merupakan struktur HTML5 Semantic yang benar untuk membungkus konten utama yang unik dalam sebuah halaman web?",
+                options: [
+                    "&lt;div id=\"main\"&gt;",
+                    "&lt;content&gt;",
+                    "&lt;main&gt;",
+                    "&lt;section-main&gt;"
+                ],
+                correctIndex: 2,
+                explanation: "Dalam HTML5 Semantic, tag &lt;main&gt; adalah elemen standar yang digunakan untuk merepresentasikan konten utama dan unik dari keseluruhan halaman web."
+            },
+            {
+                id: 3,
+                question: "Jika ingin memilih semua elemen &lt;p&gt; yang berada langsung di dalam elemen &lt;div&gt; (anak langsung / direct child), selector CSS mana yang paling tepat?",
+                options: [
+                    "div p",
+                    "div &gt; p",
+                    "div + p",
+                    "div ~ p"
+                ],
+                correctIndex: 1,
+                explanation: "Selector child ('&gt;') memilih elemen anak langsung. Sedangkan spasi biasa ('div p') memilih seluruh turunan (descendant selector), baik anak, cucu, maupun seterusnya."
+            },
+            {
+                id: 4,
+                question: "Secara default (box-sizing: content-box), jika sebuah elemen memiliki width: 300px, padding: 20px (atas-bawah-kiri-kanan), dan border: 5px, berapakah total lebar fisik elemen tersebut di layar browser?",
+                options: [
+                    "300px",
+                    "320px",
+                    "340px",
+                    "350px"
+                ],
+                correctIndex: 3,
+                explanation: "Dengan 'content-box', lebar total dihitung: width + padding kiri + padding kanan + border kiri + border kanan. Jadi: 300px + 20px + 20px + 5px + 5px = 350px."
+            },
+            {
+                id: 5,
+                question: "Nilai properti CSS position mana yang membuat suatu elemen tetap berada di posisi yang sama di layar browser meskipun halaman di-scroll ke bawah?",
+                options: [
+                    "relative",
+                    "absolute",
+                    "fixed",
+                    "static"
+                ],
+                correctIndex: 2,
+                explanation: "Position 'fixed' memposisikan elemen relatif terhadap viewport (layar browser), sehingga posisinya tidak akan bergeser meskipun halaman di-scroll."
+            },
+            {
+                id: 6,
+                question: "Properti CSS Flexbox mana yang digunakan untuk mengatur perataan elemen anak secara vertikal (silang / cross axis) di dalam flex container?",
+                options: [
+                    "justify-content",
+                    "align-items",
+                    "flex-direction",
+                    "align-content"
+                ],
+                correctIndex: 1,
+                explanation: "'align-items' digunakan untuk menyelaraskan item-item flex di sepanjang sumbu silang (cross-axis), yang secara default berjalan vertikal (jika flex-direction: row)."
+            },
+            {
+                id: 7,
+                question: "Di dalam JavaScript modern (ES6), keyword apa yang sebaiknya digunakan jika kita ingin mendeklarasikan variabel yang nilainya tidak boleh diubah (konstan) sepanjang program berjalan?",
+                options: [
+                    "var",
+                    "let",
+                    "const",
+                    "def"
+                ],
+                correctIndex: 2,
+                explanation: "Keyword 'const' digunakan untuk mendeklarasikan variabel yang bersifat konstan/read-only, yang nilainya tidak dapat di-reassign setelah diinisialisasi."
+            },
+            {
+                id: 8,
+                question: "Bagaimana cara memilih satu elemen HTML pertama yang memiliki class 'tombol-klik' menggunakan JavaScript modern?",
+                options: [
+                    "document.getElementById('tombol-klik')",
+                    "document.querySelector('.tombol-klik')",
+                    "document.getElementsByClassName('#tombol-klik')",
+                    "document.select('.tombol-klik')"
+                ],
+                correctIndex: 1,
+                explanation: "Method 'document.querySelector()' menggunakan sintaks selector CSS. Maka dari itu, untuk memilih class kita menuliskan titik di depannya: '.tombol-klik'."
+            },
+            {
+                id: 9,
+                question: "Bagaimana cara menambahkan event listener agar fungsi 'jalankan' dieksekusi ketika tombol dengan id 'btn' diklik oleh user?",
+                options: [
+                    "btn.addEventListener('click', jalankan)",
+                    "btn.listen('onclick', jalankan)",
+                    "btn.onclick = jalankan()",
+                    "btn.addEvent('hover', jalankan)"
+                ],
+                correctIndex: 0,
+                explanation: "Sintaks modern yang benar adalah menggunakan 'addEventListener' dengan parameter event pertama yaitu 'click' (tanpa awalan 'on') dan parameter kedua berupa referensi fungsinya."
+            },
+            {
+                id: 10,
+                question: "Dari selector CSS berikut, manakah yang memiliki tingkat spesifisitas (specificity weight) tertinggi dan akan mengesampingkan gaya CSS dari selector lainnya?",
+                options: [
+                    "div.container (class & tag)",
+                    "#header (id)",
+                    "header (tag saja)",
+                    "div p span (3 tag)"
+                ],
+                correctIndex: 1,
+                explanation: "Dalam CSS Specificity, ID selector ('#') memiliki nilai spesifisitas tertinggi (skor 100) dibandingkan Class selector (skor 10) dan Tag selector (skor 1)."
+            }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let selectedOptionIndex = null;
+        let userAnswers = [];
+
+        // DOM Elements
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        const questionCounter = document.getElementById('question-counter');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        
+        const finalScore = document.getElementById('final-score');
+        const scoreCircle = document.getElementById('score-circle');
+        const correctCountEl = document.getElementById('correct-count');
+        const badgeCorrect = document.getElementById('badge-correct');
+        const badgeWrong = document.getElementById('badge-wrong');
+        const resultGreeting = document.getElementById('result-greeting');
+        const resultSummary = document.getElementById('result-summary');
+        const reviewContainer = document.getElementById('review-container');
+
+        // Fisher-Yates Shuffle Algorithm
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Start Quiz
+        function startQuiz() {
+            // Acak semua soal dari database
+            currentQuestions = shuffleArray(questionsDatabase);
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            selectedOptionIndex = null;
+            
+            welcomeScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            showQuestion();
+        }
+
+        // Show Question
+        function showQuestion() {
+            selectedOptionIndex = null;
+            nextBtn.disabled = true;
+            nextBtn.textContent = currentQuestionIndex === currentQuestions.length - 1 ? 'Selesai' : 'Lanjut';
+            
+            const q = currentQuestions[currentQuestionIndex];
+            
+            // Update counter and progress bar
+            questionCounter.textContent = `Soal ${currentQuestionIndex + 1} dari ${currentQuestions.length}`;
+            const progressPercent = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            progressBarFill.style.width = `${progressPercent}%`;
+            
+            // Render question text
+            questionText.innerHTML = q.question;
+            
+            // Render options
+            optionsContainer.innerHTML = '';
+            q.options.forEach((option, idx) => {
+                const optionBtn = document.createElement('button');
+                optionBtn.className = 'option-card w-full text-left p-4 rounded-xl border border-slate-800 bg-slate-950/40 hover:bg-slate-800/60 hover:border-slate-700 transition-all flex items-start space-x-3 group';
+                
+                // Let's make an indicator badge (A, B, C, D)
+                const letter = String.fromCharCode(65 + idx);
+                
+                optionBtn.innerHTML = `
+                    <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-md bg-slate-800 text-slate-400 group-hover:bg-yellow-500/20 group-hover:text-yellow-400 text-xs font-bold font-sans uppercase transition-colors">${letter}</span>
+                    <span class="text-slate-300 group-hover:text-white text-sm sm:text-base leading-relaxed">${option}</span>
+                `;
+                
+                optionBtn.onclick = () => selectOption(idx, optionBtn);
+                optionsContainer.appendChild(optionBtn);
+            });
+        }
+
+        // Select Option
+        function selectOption(idx, optionElement) {
+            selectedOptionIndex = idx;
+            
+            // Remove selection styling from all cards
+            const allOptionCards = optionsContainer.querySelectorAll('.option-card');
+            allOptionCards.forEach(card => {
+                card.classList.remove('border-yellow-500', 'bg-yellow-500/10');
+                const badge = card.querySelector('span');
+                if (badge) {
+                    badge.classList.remove('bg-yellow-500', 'text-blue-950');
+                    badge.classList.add('bg-slate-800', 'text-slate-400');
+                }
+            });
+            
+            // Add selection styling to clicked card
+            optionElement.classList.add('border-yellow-500', 'bg-yellow-500/10');
+            const badge = optionElement.querySelector('span');
+            if (badge) {
+                badge.classList.remove('bg-slate-800', 'text-slate-400');
+                badge.classList.add('bg-yellow-500', 'text-blue-950');
+            }
+            
+            nextBtn.disabled = false;
+        }
+
+        // Next or Finish Question
+        function handleNext() {
+            if (selectedOptionIndex === null) return;
+            
+            // Save answer
+            userAnswers.push(selectedOptionIndex);
+            
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Show Results
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            let correctCount = 0;
+            currentQuestions.forEach((q, idx) => {
+                if (userAnswers[idx] === q.correctIndex) {
+                    correctCount++;
+                }
+            });
+            
+            const score = Math.round((correctCount / currentQuestions.length) * 100);
+            
+            // Set score numerical display
+            finalScore.textContent = score;
+            correctCountEl.textContent = correctCount;
+            badgeCorrect.textContent = correctCount;
+            badgeWrong.textContent = currentQuestions.length - correctCount;
+            
+            // Animate Circle
+            // Perimeter of circle: 2 * PI * r = 2 * 3.14159 * 54 = 339.29
+            const perimeter = 339.29;
+            const offset = perimeter - (score / 100) * perimeter;
+            scoreCircle.setAttribute('stroke-dashoffset', offset);
+            
+            // Dynamic greetings based on score
+            if (score === 100) {
+                resultGreeting.textContent = "Sempurna, Pak Des!";
+                resultSummary.textContent = "Luar biasa! Pak Des menjawab semua 10 soal dengan benar. Penguasaan konsep Web Dasar yang sangat matang!";
+            } else if (score >= 80) {
+                resultGreeting.textContent = "Keren Sekali, Pak Des!";
+                resultSummary.textContent = `Pak Des berhasil menjawab ${correctCount} dari 10 soal dengan benar. Pemahaman Web Dasar WPU yang hebat!`;
+            } else if (score >= 60) {
+                resultGreeting.textContent = "Kerja Bagus, Pak Des!";
+                resultSummary.textContent = `Pak Des berhasil menjawab ${correctCount} dari 10 soal dengan benar. Sudah cukup baik, terus kembangkan!`;
+            } else {
+                resultGreeting.textContent = "Ayo Coba Lagi, Pak Des!";
+                resultSummary.textContent = `Pak Des berhasil menjawab ${correctCount} dari 10 soal dengan benar. Mari kita tinjau kembali materi kuis di bawah ini.`;
+            }
+            
+            // Render Review Cards
+            renderReview();
+        }
+
+        // Render Review Cards (Collapsible accordion list)
+        function renderReview() {
+            reviewContainer.innerHTML = '';
+            
+            currentQuestions.forEach((q, idx) => {
+                const userChoiceIdx = userAnswers[idx];
+                const isCorrect = userChoiceIdx === q.correctIndex;
+                
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'border border-slate-800 rounded-xl bg-slate-950/20 overflow-hidden';
+                
+                // Header of Review Card
+                const header = document.createElement('button');
+                header.className = 'w-full text-left p-4 flex justify-between items-center hover:bg-slate-800/20 transition-all gap-4';
+                header.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                            isCorrect ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                        }">
+                            ${isCorrect ? '✓' : '✗'}
+                        </span>
+                        <span class="text-sm font-medium text-slate-300 leading-normal text-left">${idx + 1}. ${q.question}</span>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                `;
+                
+                // Body of Review Card (Hidden by default)
+                const body = document.createElement('div');
+                body.className = 'hidden p-4 bg-slate-950/60 border-t border-slate-800 text-xs sm:text-sm space-y-3';
+                
+                let optionsMarkup = '<div class="space-y-1.5">';
+                q.options.forEach((opt, oIdx) => {
+                    let textClass = 'text-slate-400';
+                    let bgClass = '';
+                    let badgeMarkup = '';
+                    
+                    if (oIdx === q.correctIndex) {
+                        textClass = 'text-emerald-400 font-medium';
+                        bgClass = 'bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2';
+                        badgeMarkup = '<span class="text-[10px] bg-emerald-500 text-blue-950 font-bold px-1.5 py-0.5 rounded ml-2">Benar</span>';
+                    } else if (oIdx === userChoiceIdx) {
+                        textClass = 'text-rose-400 font-medium';
+                        bgClass = 'bg-rose-500/10 border border-rose-500/20 rounded-lg p-2';
+                        badgeMarkup = '<span class="text-[10px] bg-rose-500 text-white font-bold px-1.5 py-0.5 rounded ml-2">Pilihan Anda</span>';
+                    } else {
+                        bgClass = 'p-2';
+                    }
+                    
+                    optionsMarkup += `
+                        <div class="flex items-center ${bgClass}">
+                            <span class="text-xs uppercase font-bold mr-2 text-slate-500">${String.fromCharCode(65 + oIdx)}.</span>
+                            <span class="${textClass}">${opt}</span>
+                            ${badgeMarkup}
+                        </div>
+                    `;
+                });
+                optionsMarkup += '</div>';
+                
+                body.innerHTML = `
+                    ${optionsMarkup}
+                    <div class="mt-4 p-3 bg-slate-800/30 rounded-lg text-slate-400 leading-relaxed border-l-2 border-yellow-500">
+                        <strong class="text-yellow-400 font-semibold block mb-1">Penjelasan:</strong>
+                        ${q.explanation}
+                    </div>
+                `;
+                
+                // Toggle expansion
+                header.onclick = () => {
+                    const icon = header.querySelector('svg');
+                    const isHidden = body.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                        body.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    } else {
+                        body.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                    }
+                };
+                
+                reviewCard.appendChild(header);
+                reviewCard.appendChild(body);
+                reviewContainer.appendChild(reviewCard);
+            });
+        }
+
+        // Event Listeners
+        startBtn.onclick = startQuiz;
+        nextBtn.onclick = handleNext;
+        restartBtn.onclick = startQuiz;
+    </script>
+</body>
+</html>
